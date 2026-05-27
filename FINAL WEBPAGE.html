@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Disaster & Volunteer Management System</title>
+<style>
+body{    margin:0;    font-family:Segoe UI,sans-serif;    color:white;    background-image: url('https://images.unsplash.com/photo-1509099836639-18ba1795216d');     background-size: cover;    background-position: center;    background-attachment: fixed;}
+nav{    position:fixed;    top:0;    width:100%;    background:black;    padding:10px;    text-align:center;    z-index:1000;}
+nav a{    color:#00ffff;    margin:0 10px;    text-decoration:none;    font-weight:bold;}
+section{    min-height:100vh;    padding:120px 10%;}
+.overlay{    background:rgba(0,0,0,0.85);    padding:30px;    border-radius:15px;}
+h1{text-align:center;color:#00ffff;}
+h2{border-bottom: 1px solid #00ffff; padding-bottom: 10px; margin-top: 40px; color:#00ffff;}
+form{max-width:600px;margin:auto;}
+label{display:block; margin-top:15px; font-weight:bold; color:#00ffff;}
+input,select,textarea,button{    width:100%;    padding:10px;    margin-top:10px;    border-radius:6px;    border:none;    box-sizing: border-box;}
+button{background:#00e6e6;font-weight:bold;cursor:pointer; transition: 0.3s;}
+button:hover{background:#00b3b3;}
+.success{color:#7CFC00;text-align:center; font-weight:bold;}
+.error{color:#ff6666;text-align:center; font-weight:bold;}
+table{    width:100%;    border-collapse:collapse;    margin-top:20px;    background: rgba(255,255,255,0.05);}
+th,td{    border:1px solid #555;    padding:12px;    text-align:center;}
+th{background:#222; color:#00ffff;}
+.delBtn{background:#FF4500;color:white;padding:5px 10px; width:auto; cursor:pointer; border-radius:4px;}
+#adminContent { display: none; }
+/* Report Styling */
+.report-box { background: #fff; color: #333; padding: 25px; border-radius: 8px; margin-top: 20px; line-height: 1.6; }
+.report-header { border-bottom: 2px solid #333; margin-bottom: 15px; }
+</style>
+</head>
+<body>
+
+<nav><a href="#register">1. Register</a><a href="#login">2. Login</a><a href="#complaint">3. Complaint</a><a href="#task">4. Assign Task</a><a href="#resource">5. Resources</a><a href="#track">6. Tracking</a><a href="#shelter">7. Shelters</a><a href="#alert">8. Alerts</a><a href="#offline">9. Offline</a><a href="#report">10. Reports</a><a href="#manage">11. Manager Panel</a></nav>
+
+<script>let users = JSON.parse(localStorage.getItem("users")) || [];let complaints = JSON.parse(localStorage.getItem("complaints")) || [];let resources = JSON.parse(localStorage.getItem("resources")) || [];let shelters = JSON.parse(localStorage.getItem("shelters")) || [];let tasks = JSON.parse(localStorage.getItem("tasks")) || [];let offlineData = JSON.parse(localStorage.getItem("offline")) || [];const MANAGER_PASSWORD = "admin123";</script>
+
+<section id="register"><div class="overlay"><h1>Volunteer Registration</h1><form onsubmit="registerUser(event)"><input id="rname" placeholder="Full Name" required><input id="remail" type="email" placeholder="Email" required><select id="rngoSelect" onchange="toggleNGOName()">    <option value="No">Part of NGO? No</option>    <option value="Yes">Part of NGO? Yes</option></select><input id="rngoName" placeholder="NGO Name" style="display:none;"><select id="rfield">    <option value="General">Select Volunteer Field</option>    <option value="Medical">Medical</option>    <option value="Rescue">Rescue Operation</option>    <option value="Logistics">Logistics</option></select><input id="ruser" placeholder="Username" required><input id="rpass" type="password" placeholder="Password" required><button type="submit">Register</button><div id="rmsg"></div></form></div></section>
+
+<section id="login"><div class="overlay"><h1>Volunteer Login</h1><form onsubmit="loginUser(event)"><input id="luser" placeholder="Username" required><input id="lpass" type="password" placeholder="Password" required><button type="submit">Login</button><div id="lmsg"></div></form></div></section>
+
+<section id="complaint"><div class="overlay"><h1>Victim Complaint Center</h1><form onsubmit="addComplaint(event)">    <label>Description of Situation</label>    <textarea id="cdesc" placeholder="Describe the disaster..."></textarea>    <label>Needs and Wants</label>    <textarea id="cneeds" placeholder="Food, Medicine, etc..."></textarea>    <label>Location</label>    <input id="cloc" placeholder="Specific area">    <button type="submit">Submit Complaint</button>    <div id="cmsg"></div></form></div></section>
+
+<section id="task"><div class="overlay"><h1>Assign Task</h1><form onsubmit="assignTask(event)"><select id="volunteerSelect"><option value="">Select Volunteer</option></select><input id="taskDesc" placeholder="Task Description"><input id="taskLoc" placeholder="Task Location"><button type="submit">Assign Task</button><div id="taskMsg"></div></form></div></section>
+
+<section id="resource"><div class="overlay"><h1>Resource Management</h1><form onsubmit="addResource(event)"><input id="resname" placeholder="Item Name"><input id="resqty" type="number" placeholder="Quantity"><input id="resarea" placeholder="Area Needed">    <button type="submit">Add Resource</button><div id="resmsg"></div></form></div></section>
+
+<section id="track"><div class="overlay"><h1>Volunteer Activity Tracking</h1><div style="overflow-x:auto;"><table id="trackingTable"></table></div></div></section>
+
+<section id="shelter"><div class="overlay"><h1>Shelters</h1><form onsubmit="addShelter(event)"><input id="shloc" placeholder="Shelter Location"><input id="shcap" type="number" placeholder="Capacity"><button type="submit">Add Shelter</button><div id="shmsg"></div></form></div></section>
+
+<section id="alert"><div class="overlay"><h1>Disaster Alert System</h1><form onsubmit="sendAlert(event)"><textarea id="amsg" placeholder="Alert message"></textarea><button type="submit">Send Alert</button><div id="amsgout"></div></form></div></section>
+
+<section id="offline"><div class="overlay"><h1>Offline Data Entry</h1><form onsubmit="addOffline(event)"><input id="offlineInput" placeholder="Enter complaint offline"><button type="submit">Save Offline</button><div id="offmsg"></div></form><button onclick="syncOffline()" style="background:#FFA500; margin-top:10px;">Sync All Data</button><table id="offlineTable"></table></div></section>
+
+<section id="report">
+<div class="overlay">
+    <h1>Relief Management Reports</h1>
+    <p style="text-align:center;">Generate formal documentation of relief operations and resource tracking.</p>
+    <div style="max-width:400px; margin:auto;">
+        <input id="reportDisasterName" placeholder="Enter Disaster Name (e.g. Flood 2024)">
+        <button onclick="generateReport()">Generate Relief Report</button>
+    </div>
+    <div id="reportout"></div>
+</div>
+</section>
+
+<section id="manage"><div class="overlay">    <h1>Manager Access</h1>    <div id="adminAuth">        <form onsubmit="checkManagerPass(event)">            <input id="mPassInput" type="password" placeholder="Manager Password">            <button type="submit">Unlock Data</button>            <div id="mPassMsg"></div>        </form>    </div>    <div id="adminContent">        <h2>Complaints</h2><table id="complaintTable"></table>        <h2>Resources</h2><table id="resourceTable"></table>        <h2>Shelters</h2><table id="shelterTable"></table>        <h2>Tasks</h2><table id="taskTable"></table>        <h2>Users</h2><table id="userTable"></table>        <button onclick="lockRecords()" style="background:#555; margin-top:20px;">Lock Records</button>    </div></div></section>
+
+<script>
+function toggleNGOName(){ rngoName.style.display = (rngoSelect.value === "Yes") ? "block" : "none"; }
+function registerUser(e){    e.preventDefault();    users.push({name:rname.value,email:remail.value,ngoName:rngoName.value||"None",field:rfield.value,user:ruser.value,pass:rpass.value,status:"Available"});    localStorage.setItem("users", JSON.stringify(users));    rmsg.innerHTML="<p class='success'>Registered!</p>";    displayData();}
+function loginUser(e){    e.preventDefault();    let u = users.find(x=>x.user===luser.value);    if(!u) lmsg.innerHTML="<p class='error'>User not found</p>";    else if(u.pass!==lpass.value) lmsg.innerHTML="<p class='error'>⚠️ Incorrect Password</p>";    else lmsg.innerHTML=`<p class='success'>Welcome ${u.name}</p>`;}
+function addComplaint(e){    e.preventDefault();    if(!cdesc.value.trim()||!cloc.value.trim()){ cmsg.innerHTML="<p class='error'>⚠️ Invalid Fields: Required!</p>"; return; }    complaints.push({desc:cdesc.value,needs:cneeds.value,loc:cloc.value,forwardedTo:"NGO"});    localStorage.setItem("complaints", JSON.stringify(complaints));    cmsg.innerHTML="<p class='success'>Submitted</p>";    displayData();}
+function addResource(e){    e.preventDefault();    if(!resname.value.trim() || !resqty.value || !resarea.value.trim()){         resmsg.innerHTML="<p class='error'>⚠️ Failure: Improper credentials. Please provide Name, Quantity, and Area.</p>";         return;     }    resources.push({name:resname.value, qty:resqty.value, area:resarea.value});    localStorage.setItem("resources", JSON.stringify(resources));    resmsg.innerHTML="<p class='success'>✅ Success: Resource Allocated Successfully!</p>";    resname.value=""; resqty.value=""; resarea.value="";    displayData();}
+function checkManagerPass(e){    e.preventDefault();    if(mPassInput.value === MANAGER_PASSWORD){ adminAuth.style.display="none"; adminContent.style.display="block"; displayData(); }    else mPassMsg.innerHTML="<p class='error'>Denied</p>";}
+function lockRecords(){ adminAuth.style.display="block"; adminContent.style.display="none"; }
+function assignTask(e){    e.preventDefault();    let idx = volunteerSelect.value;    let desc = taskDesc.value.trim();    let loc = taskLoc.value.trim();    if(idx === "" || desc === "" || loc === "") {        taskMsg.innerHTML = "<p class='error'>⚠️ Assignment Failed: Invalid Entry. Please select a volunteer and fill all task details.</p>";        return;    }    tasks.push({volunteerName:users[idx].name, desc:desc, loc:loc, status:"In Process", reason:""});    users[idx].status="Busy";    localStorage.setItem("tasks",JSON.stringify(tasks));    localStorage.setItem("users",JSON.stringify(users));    taskMsg.innerHTML = "<p class='success'>✅ Task Assigned Successfully! Volunteer has been notified.</p>";    taskDesc.value = ""; taskLoc.value = "";    displayData();}
+function deleteItem(type, i) {    if (type === 'complaints') complaints.splice(i, 1);    else if (type === 'resources') resources.splice(i, 1);    else if (type === 'shelters') shelters.splice(i, 1);    else if (type === 'tasks') tasks.splice(i, 1);    else if (type === 'users') users.splice(i, 1);    localStorage.setItem(type, JSON.stringify(eval(type)));    displayData();}
+function displayData(){    volunteerSelect.innerHTML = '<option value="">Select Volunteer</option>' + users.map((u,i)=>`<option value="${i}">${u.name} (${u.status})</option>`).join('');    trackingTable.innerHTML = "<tr><th>Volunteer</th><th>Task</th><th>Status</th></tr>" + tasks.map(t=>`<tr><td>${t.volunteerName}</td><td>${t.desc}</td><td>${t.status}</td></tr>`).join('');    complaintTable.innerHTML = "<tr><th>Desc</th><th>Loc</th><th>Action</th></tr>" + complaints.map((c,i)=>`<tr><td>${c.desc}</td><td>${c.loc}</td><td><button class='delBtn' onclick="deleteItem('complaints',${i})">Delete</button></td></tr>`).join('');    resourceTable.innerHTML = "<tr><th>Item</th><th>Qty</th><th>Area</th><th>Action</th></tr>" + resources.map((r,i)=>`<tr><td>${r.name}</td><td>${r.qty}</td><td>${r.area}</td><td><button class='delBtn' onclick="deleteItem('resources',${i})">Delete</button></td></tr>`).join('');    shelterTable.innerHTML = "<tr><th>Loc</th><th>Cap</th><th>Action</th></tr>" + shelters.map((s,i)=>`<tr><td>${s.loc}</td><td>${s.cap}</td><td><button class='delBtn' onclick="deleteItem('shelters',${i})">Delete</button></td></tr>`).join('');    taskTable.innerHTML = "<tr><th>Vol</th><th>Status</th><th>Reason</th><th>Action</th></tr>" + tasks.map((t,i)=>`<tr><td>${t.volunteerName}</td><td>${t.status}</td><td><input onchange="tasks[${i}].reason=this.value; localStorage.setItem('tasks',JSON.stringify(tasks))" value="${t.reason}"></td><td><button class='delBtn' onclick="deleteItem('tasks',${i})">Delete</button></td></tr>`).join('');    userTable.innerHTML = "<tr><th>Name</th><th>Field</th><th>Status</th><th>Action</th></tr>" + users.map((u,i)=>`<tr><td>${u.name}</td><td>${u.field}</td><td>${u.status}</td><td><button class='delBtn' onclick="deleteItem('users',${i})">Delete</button></td></tr>`).join('');}
+function addShelter(e){     e.preventDefault();     if(!shloc.value.trim() || !shcap.value){        shmsg.innerHTML="<p class='error'>⚠️ Error: Invalid Input. Please provide both Location and Capacity.</p>";        return;    }    shelters.push({loc:shloc.value, cap:shcap.value});     localStorage.setItem("shelters",JSON.stringify(shelters));     shmsg.innerHTML="<p class='success'>✅ Success: Shelter Added Successfully!</p>";    shloc.value=""; shcap.value="";    displayData(); }
+function addOffline(e){ e.preventDefault(); offlineData.push(offlineInput.value); localStorage.setItem("offline",JSON.stringify(offlineData)); displayOffline(); }
+function displayOffline(){ offlineTable.innerHTML = offlineData.map(d=>`<tr><td>${d}</td></tr>`).join(''); }
+function syncOffline(){ offlineData.forEach(d=>complaints.push({desc:d,loc:"Sync"})); offlineData=[]; localStorage.setItem("offline","[]"); localStorage.setItem("complaints", JSON.stringify(complaints)); displayData(); }
+
+// --- UPDATED REPORT GENERATION FUNCTION ---
+function generateReport(){ 
+    let dName = reportDisasterName.value || "General Relief Operation";
+    let resourceSummary = resources.map(r => `• ${r.qty} units of ${r.name} allocated to ${r.area}`).join('<br>') || "No resources recorded yet.";
+    let activeTasks = tasks.filter(t => t.status !== 'Completed').length;
+    
+    reportout.innerHTML = `
+    <div class="report-box">
+        <div class="report-header">
+            <h3>Disaster Relief Summary Report</h3>
+            <p><strong>Disaster:</strong> ${dName}</p>
+            <p><strong>Date Generated:</strong> ${new Date().toLocaleDateString()}</p>
+        </div>
+        <p><strong>Relief Management Overview:</strong><br>
+        The system has recorded a total of <strong>${complaints.length}</strong> victim complaints regarding this specific situation. To manage relief, 
+        <strong>${users.length}</strong> volunteers have been registered, with <strong>${activeTasks}</strong> relief tasks currently in progress across various sectors.</p>
+        
+        <p><strong>Resource Utilization by Location:</strong><br>
+        ${resourceSummary}</p>
+        
+        <p><strong>Conclusion:</strong><br>
+        This report helps tracking the relief management carried out for victims. Currently, <strong>${shelters.length}</strong> shelters are active 
+        to ensure safety and support for those affected.</p>
+        <button onclick="window.print()" style="background:#333; color:#fff; width:auto; padding:5px 15px;">Download PDF / Print</button>
+    </div>`;
+}
+
+function sendAlert(e){ e.preventDefault(); amsgout.innerHTML="<p class='success'>Alert Sent!</p>"; }
+displayData();displayOffline();</script></body></html>
